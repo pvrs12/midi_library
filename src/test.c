@@ -1,5 +1,6 @@
 #include "include/midi.h"
 #include "include/midi_helper.h"
+#include "include/midi_constants.h"
 
 #include <string.h>
 
@@ -182,35 +183,35 @@ void test_helper_midi(){
 	struct EventString* e = malloc(sizeof(struct EventString));
 
 	e = new_event_string(e);
-	e = add_meta_message(e, 0x03);
+	e = add_meta_message(e, META_TRACK_NAME);
 	e = add_string(e, "Trumpet", strlen("Trumpet"));
 	track_add_event_full(track, 0, e->event_string, e->event_string_len);
 	free_event_string(e);
 
 	//it's cheaper to reuse the same EventString (although not much)
 	e = new_event_string(e);
-	e = add_voice_message(e, 0xC0, 0x00);
-	e = add_byte(e, 0x57);
+	e = add_voice_message(e, VOICE_PROGRAM_CHANGE, CHANNEL_0);
+	e = add_byte(e, INSTRUMENT_TRUMPET);
 	track_add_event_full(track, 0, e->event_string, e->event_string_len);
 	free_event_string(e);
 
 	e = new_event_string(e);
-	e = add_voice_message(e, 0x90, 0x00);
-	e = add_byte(e, 0x3C);
-	e = add_byte(e, 0x40);
+	e = add_voice_message(e, VOICE_NOTE_ON, CHANNEL_0);
+	e = add_byte(e, NOTE_C4);
+	e = add_byte(e, VELOCITY_MEZZOFORTE);
 	track_add_event_full(track, 0, e->event_string, e->event_string_len);
 	free_event_string(e);
 
 	e = new_event_string(e);
-	e = add_voice_message(e, 0x80, 0x00);
-	e = add_byte(e, 0x3C);
-	e = add_byte(e, 0x40);
+	e = add_voice_message(e, VOICE_NOTE_OFF, CHANNEL_0);
+	e = add_byte(e, NOTE_C4);
+	e = add_byte(e, VELOCITY_MEZZOFORTE);;
 	track_add_event_full(track, 3072, e->event_string, e->event_string_len);
 	free_event_string(e);
 
 	e = new_event_string(e);
-	e = add_meta_message(e, 0x2F);
-	e = add_string("", 0);
+	e = add_meta_message(e, META_END);
+	e = add_string(e, "", 0);
 	track_add_event_full(track, 0, e->event_string, e->event_string_len);
 	free_event_string(e);
 
