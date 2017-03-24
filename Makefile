@@ -61,5 +61,6 @@ debug: $(BIN)
 
 .PHONY: clean
 clean:
-	rm -rf obj
-	rm -rf bin
+	rm -rf $(OBJ_DIR)
+	rm -rf $(BIN_DIR)
+	rm -rf $(LIB_DIR)
