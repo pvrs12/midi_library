@@ -11,7 +11,7 @@ Here is a __very__ simple program to create a MIDI.
 #include <stdio.h>
 #include <string.h>
 
-#include "src/include/midi.h"
+#include "midi.h"
 
 int main(){
 	struct Midi* m = malloc(sizeof(struct Midi));
@@ -66,10 +66,10 @@ int main(){
 	//and stop the track (using the array from before)
 	track_add_event_full(track1, 0x00, end_event, 3);
 
-	FILE* f = fopen("test.midi", "wb");
+	FILE* f = fopen("example.midi", "wb");
 	write_midi(m, f);
 	fclose(f);
-	printf("Finshed writing MIDI 'test.midi'\n");
+	printf("Finshed writing MIDI 'example.midi'\n");
 
 	//don't forget to free after done
 	//free_midi takes care of all of the things it contains as well (MidiTrackChunk, MidiEvent)
@@ -79,3 +79,7 @@ int main(){
 	return 0;
 }
 ```
+
+This could then be compiled by `gcc test.c -lmidi`. 
+
+You can also simply run `make test` to build and and execute a small test program which will generate, write, then read a small MIDI file
