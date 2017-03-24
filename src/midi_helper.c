@@ -17,7 +17,6 @@ struct EventString* add_to_event(struct EventString* event, const uint8_t* s, si
 	event->event_string_len += size;
 	event->event_string = realloc(event->event_string, sizeof(uint8_t) * event->event_string_len);
 	memcpy(event->event_string + old, s, size);
-	/*strncat((char*)event->event_string, (const char*)s, size);*/
 	return event;
 }
 

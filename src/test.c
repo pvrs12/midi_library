@@ -225,10 +225,19 @@ void test_helper_midi(){
 	
 }
 
+void test_errors(){
+	struct Midi* m = malloc(sizeof(struct Midi));
+	new_midi(m);
+	midi_add_header(m, 0, 1, 384);
+	free_midi(m);
+	free(m);
+}
+
 int main(){
 	test_varlen();
 	test_read_write();
 	test_helper_midi();
 
+	test_errors();
 	return 0;
 }

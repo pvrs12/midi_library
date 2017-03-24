@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <assert.h>
+
 //for htonl 
 #include <netinet/in.h>
 
@@ -103,9 +105,10 @@ struct MidiChunk* midi_add_chunk(struct Midi* midi){
 }
 
 struct MidiHeaderChunk* midi_add_header(struct Midi* midi, uint16_t format, uint16_t tracks, uint16_t division){
-	if(midi->header){
-		//some error
-	}
+	// A Midi cannot have more than one header track
+	// assert that it does not already have one
+	assert(!midi->header); 
+
 	struct MidiChunk* chunk = midi_add_chunk(midi);
 	new_midichunk(chunk, CHUNK_HEADER);
 	struct MidiHeaderChunk* header = malloc(sizeof(struct MidiHeaderChunk));
@@ -310,10 +313,9 @@ struct Midi* read_midi(FILE* f){
 	uint8_t chunk_head[TYPE_LEN];
 	fread(chunk_head, sizeof(uint8_t), TYPE_LEN, f);
 	uint32_t size_head = read_uint32_t(f);
-	if(size_head != HEADER_LEN){
-		//throw an error
-		printf("wrong header size\n");
-	}
+
+	//The size of the header must be equal to HEADER_LEN
+	assert(size_head == HEADER_LEN);
 	uint16_t format = read_uint16_t(f);
 	uint16_t tracks = read_uint16_t(f);
 	uint16_t division = read_uint16_t(f);
@@ -338,8 +340,8 @@ struct Midi* read_midi(FILE* f){
 				break;
 			} else if(read > size_track){
 				//error
-				//read too much somehow
-				printf("read too much somehow [sizeleft = %zu]\n", read);
+				//somehow we read too much...
+				assert(0);
 				break;
 			}
 		}
