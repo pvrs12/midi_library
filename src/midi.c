@@ -1,4 +1,5 @@
 #include "include/midi.h"
+#include "include/midi_constants.h"
 
 #include <malloc.h>
 #include <stdlib.h>
@@ -8,7 +9,6 @@
 //for htonl 
 #include <netinet/in.h>
 
-//{{{ varlen_to_int
 uint32_t varlen_to_int (const uint8_t* var, size_t* size) {
 	uint32_t val = 0;
 	size_t _size = 1;
@@ -26,14 +26,12 @@ uint32_t varlen_to_int (const uint8_t* var, size_t* size) {
 	}
 	return val;	
 }
-//}}}
 
-//{{{ int_to_varlen
 uint8_t* int_to_varlen(uint32_t val, size_t* _size)	{
 	uint32_t val2 = val;
 	//determine the necessary size of the variable length quantity
 	size_t count = 1;
-	while(val2>>=1){
+	while(val2 >>= 1){
 		count++;
 	}
 
@@ -57,9 +55,7 @@ uint8_t* int_to_varlen(uint32_t val, size_t* _size)	{
 	}
 	return var;
 }
-//}}}
 
-//{{{ new_midichunk
 void new_midichunk(struct MidiChunk* chunk, enum ChunkType type){
 	if(type == CHUNK_HEADER){
 		memcpy(chunk->type, "MThd", TYPE_LEN);
@@ -70,9 +66,7 @@ void new_midichunk(struct MidiChunk* chunk, enum ChunkType type){
 
 	chunk->chunk = NULL;
 }
-//}}}
 
-//{{{ free_minichunk
 void free_midichunk(struct MidiChunk* chunk){
 	if(chunk->type_e == CHUNK_HEADER){
 		struct MidiHeaderChunk* header = (struct MidiHeaderChunk*) chunk->chunk;
@@ -84,17 +78,13 @@ void free_midichunk(struct MidiChunk* chunk){
 		free(track);
 	}
 }
-//}}}
 
-//{{{ new_midi
 void new_midi(struct Midi* midi) {
 	midi->chunk_count = 0;
 	midi->chunks = malloc(sizeof(struct MidiChunk*) * midi->chunk_count);
 	midi->header = NULL;
 }
-//}}}
 
-//{{{ free_midi
 void free_midi(struct Midi* midi){
 	for(size_t i = 0; i < midi->chunk_count;++i){
 		free_midichunk(midi->chunks[i]);
@@ -102,9 +92,7 @@ void free_midi(struct Midi* midi){
 	}
 	free(midi->chunks);
 }
-//}}}
 
-//{{{ midi_add_chunk
 struct MidiChunk* midi_add_chunk(struct Midi* midi){
 	midi->chunk_count++;
 	midi->chunks = realloc(midi->chunks, sizeof(struct MidiChunk*) * midi->chunk_count);
@@ -113,9 +101,7 @@ struct MidiChunk* midi_add_chunk(struct Midi* midi){
 	midi->chunks[midi->chunk_count - 1] = chunk;
 	return chunk;
 }
-//}}}
 
-//{{{ midi_add_header
 struct MidiHeaderChunk* midi_add_header(struct Midi* midi, uint16_t format, uint16_t tracks, uint16_t division){
 	if(midi->header){
 		//some error
@@ -128,9 +114,7 @@ struct MidiHeaderChunk* midi_add_header(struct Midi* midi, uint16_t format, uint
 	midi->header = header;
 	return header;
 }
-//}}}
 
-//{{{ midi_add_track
 struct MidiTrackChunk* midi_add_track(struct Midi* midi){
 	struct MidiChunk* chunk = midi_add_chunk(midi);
 	new_midichunk(chunk, CHUNK_TRACK);
@@ -139,9 +123,7 @@ struct MidiTrackChunk* midi_add_track(struct Midi* midi){
 	chunk->chunk = track;
 	return track;
 }
-//}}}
 
-//{{{ new_midi_header
 void new_midi_header(struct MidiHeaderChunk* header, uint32_t length, uint16_t format, uint16_t tracks, uint16_t division){
 	header->length = length;
 
@@ -149,30 +131,22 @@ void new_midi_header(struct MidiHeaderChunk* header, uint32_t length, uint16_t f
 	header->tracks = tracks;
 	header->division = division;
 }
-//}}}
 
-//{{{ free_midi_header
 void free_midi_header(struct MidiHeaderChunk* header){
 	//nothing is allocated
 }
-//}}}
 
-//{{{ new_midi_event
 void new_midi_event(struct MidiEvent* event, uint32_t delta_time, const uint8_t* ev, size_t event_length){
 	event->delta_time = delta_time;
 	event->event = malloc(sizeof(uint8_t) * event_length);
 	event->event_len = event_length;
 	memcpy(event->event, ev, event_length);
 }
-//}}}
 
-//{{{ free_midi_event
 void free_midi_event(struct MidiEvent* event){
 	free(event);
 }
-//}}}
 
-//{{{ parse_midi_event
 struct MidiEvent* parse_midi_event(const uint8_t* event, size_t* size_read){
 	size_t delta_time_size;
 	uint32_t delta_time = varlen_to_int(event, &delta_time_size);
@@ -182,6 +156,8 @@ struct MidiEvent* parse_midi_event(const uint8_t* event, size_t* size_read){
 	size_t event_size;
 	if((event_type & 0xF0) < 0x80){
 		//this should be an error...
+		//no wait. it should jsut add to the previous event.
+		//fuck running status
 	} else if((event_type & 0xF0) < 0xF0){
 		//this is a midi voice or mode message
 		event_size = parse_midi_voice_event(event_code);
@@ -202,128 +178,51 @@ struct MidiEvent* parse_midi_event(const uint8_t* event, size_t* size_read){
 	}
 	return e;
 }
-//}}}
 
-//{{{ parse_midi_voice_event
 size_t parse_midi_voice_event(const uint8_t* event_code){
 	uint8_t status = event_code[0] & 0xF0;
 	size_t read;
 	switch(status){
-		case(0x80):
-		case(0x90):
-		case(0xA0):
-		case(0xB0):
-		case(0xE0):
+		case(VOICE_NOTE_OFF):
+		case(VOICE_NOTE_ON):
+		case(VOICE_POLYPHONIC_PRESSURE):
+		case(VOICE_CONTROLLER_CHANGE):
+		case(VOICE_PITCH_BEND):
 			read = 3;
 			break;
-		case(0xC0):
-		case(0xD0):
+		case(VOICE_PROGRAM_CHANGE):
+		case(VOICE_CHANNEL_KEY_PRESSURE):
 			read = 2;
 			break;
 	}
 	return read;
 }
-//}}}
 
-//{{{ parse_midi_sysex_event
 size_t parse_midi_sysex_event(const uint8_t* event_code){
 	size_t len_size;
 	uint32_t len = varlen_to_int(event_code + 1, &len_size);
 	return len_size + len + 1;
 }
-//}}}
 
-//{{{ parse_midi_meta_event
 size_t parse_midi_meta_event(const uint8_t* event_code){
-	uint8_t type = event_code[1];
-	size_t read;
-	switch(type){
-		//sequence number
-		case(0x00):
-			//FF 00 02 SS SS
-			read = 5;
-			break;
-		//text event
-		case(0x01):
-		//copyright notice
-		case(0x02):
-		//sequence/track name
-		case(0x03):
-		//instrument name
-		case(0x04):
-		//lyric
-		case(0x05):
-		//marker
-		case(0x06):
-		//cue point
-		case(0x07):{
-			//FF <nn> <len> <text>
-			const uint8_t* len_start = event_code + 2;
-			size_t len_size;
-			uint32_t len = varlen_to_int(len_start, &len_size);
-			read = 2 + len_size + len;
-			break;
-		}
-		//MIDI Channel Prefix
-		case(0x20):
-			//FF 20 01 CC
-			read = 4;
-			break;
-		//End of Track
-		case(0x2F):
-			//FF 2F 00
-			read = 3;
-			break;
-		//Set Tempo
-		case(0x51):
-			//FF 51 03 tt tt tt
-			read = 6;
-			break;
-		//SMTPE Offset
-		case(0x54):
-			//FF 54 05 hh mm ss fr ff
-			read = 8;
-			break;
-		//Time Signature
-		case(0x58):
-			//FF 58 04 nn dd cc bb
-			read = 7;
-			break;
-		//Key Signature
-		case(0x59):
-			//FF 59 02 sf mi
-			read = 5;
-		//Sequencer-Specific Meta-event
-		case(0x7F):{
-			//FF 7F <len> <id> <data>
-			const uint8_t* len_start = event_code+2;
-			size_t len_size;
-			uint32_t len = varlen_to_int(len_start, &len_size);
-			read = 2 + len_size + len;
-		}
-	}
-	return read;
+	size_t len_size;
+	uint32_t len = varlen_to_int(event_code + 2, &len_size);
+	return len_size + len + 2;
 }
-//}}}
 
-//{{{ new_midi_track
 void new_midi_track(struct MidiTrackChunk* track){
 	track->event_count = 0;
 
 	track->events = malloc(sizeof(struct MidiEvent*) * track ->event_count);
 }
-//}}}
 
-//{{{ free_midi_track
 void free_midi_track(struct MidiTrackChunk* track){
 	for(size_t i = 0; i < track->event_count; ++i){
 		free_midi_event(track->events[i]);
 	}
 	free(track->events);
 }
-//}}}
 
-//{{{ track_length
 size_t track_length(struct MidiTrackChunk* track){
 	size_t s = 0;
 	for(size_t i = 0; i < track->event_count; ++i){
@@ -335,9 +234,7 @@ size_t track_length(struct MidiTrackChunk* track){
 	}
 	return s;
 }
-//}}}
 
-//{{{ track_add_event
 struct MidiEvent* track_add_event(struct MidiTrackChunk* track){
 	track->event_count++;
 	track->events = realloc(track->events, sizeof(struct MidiEvent*) * track->event_count);
@@ -346,56 +243,42 @@ struct MidiEvent* track_add_event(struct MidiTrackChunk* track){
 	track->events[track->event_count - 1] = event;
 	return event;
 }
-//}}}
 
-//{{{ track_add_event_full
 struct MidiEvent* track_add_event_full(struct MidiTrackChunk* track, uint32_t delta_time, const uint8_t* event_data, size_t event_data_len){
 	struct MidiEvent* event = track_add_event(track);
 	new_midi_event(event, delta_time, event_data, event_data_len);
 	return event;
 }
-//}}}
 
-//{{{ track_add_event_existing
 void track_add_event_existing(struct MidiTrackChunk* track, struct MidiEvent* event){
 	track->event_count++;
 	track->events = realloc(track->events, sizeof(struct MidiEvent*) * track->event_count);
 
 	track->events[track->event_count - 1] = event;
 }
-//}}}
 
-//{{{ write_uint16_t
 void write_uint16_t(uint16_t data, FILE* f){
 	uint16_t d = htons(data);
 	fwrite(&d, sizeof(uint16_t), 1, f);
 }
-//}}}
 
-//{{{ write_uint32_t
 void write_uint32_t(uint32_t data, FILE* f){
 	uint32_t d = htonl(data);
 	fwrite(&d, sizeof(uint32_t), 1, f);
 }
-//}}}
 
-//{{{ read_uint16_t
 uint16_t read_uint16_t(FILE* f){
 	uint16_t d;
 	fread(&d, sizeof(uint16_t), 1, f);
 	return ntohs(d);
 }
-//}}}
 
-//{{{ read_uint32_t
 uint32_t read_uint32_t(FILE* f){
 	uint32_t d;
 	fread(&d, sizeof(uint32_t), 1, f);
 	return ntohl(d);
 }
-//}}}
 
-//{{{ write_midi
 void write_midi(struct Midi* midi, FILE* f) {
 	for(uint32_t i = 0; i < midi->chunk_count; ++i){
 		struct MidiChunk* chunk = midi->chunks[i];
@@ -419,9 +302,7 @@ void write_midi(struct Midi* midi, FILE* f) {
 		}
 	}
 }
-//}}}
 
-//{{{ read_midi
 struct Midi* read_midi(FILE* f){	
 	struct Midi* midi = malloc(sizeof(struct Midi));
 	new_midi(midi);
@@ -466,5 +347,3 @@ struct Midi* read_midi(FILE* f){
 	}
 	return midi;
 }
-//}}}
-
