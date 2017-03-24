@@ -1,6 +1,8 @@
 #include "include/midi.h"
 #include "include/midi_helper.h"
 
+#include <string.h>
+
 void test_varlen(){
 	size_t size;
 	uint8_t* num = int_to_varlen(0x0FFFFFFF, &size);
@@ -171,13 +173,55 @@ void test_read_write(){
 	free(mid);
 }
 
-void build_helper_midi(){
+void test_helper_midi(){
+	struct Midi* m = malloc(sizeof(struct Midi));
+	new_midi(m);
+	midi_add_header(m, 0, 1, 384);
+	struct MidiTrackChunk* track = midi_add_track(m);
+
 	struct EventString* e = malloc(sizeof(struct EventString));
-	new_event_string(e);
-	//add a turn note on message
-	add_voice_message(e, 0x90, 0x00);
+
+	e = new_event_string(e);
+	e = add_meta_message(e, 0x03);
+	e = add_string(e, "Trumpet", strlen("Trumpet"));
+	track_add_event_full(track, 0, e->event_string, e->event_string_len);
 	free_event_string(e);
+
+	//it's cheaper to reuse the same EventString (although not much)
+	e = new_event_string(e);
+	e = add_voice_message(e, 0xC0, 0x00);
+	e = add_byte(e, 0x57);
+	track_add_event_full(track, 0, e->event_string, e->event_string_len);
+	free_event_string(e);
+
+	e = new_event_string(e);
+	e = add_voice_message(e, 0x90, 0x00);
+	e = add_byte(e, 0x3C);
+	e = add_byte(e, 0x40);
+	track_add_event_full(track, 0, e->event_string, e->event_string_len);
+	free_event_string(e);
+
+	e = new_event_string(e);
+	e = add_voice_message(e, 0x80, 0x00);
+	e = add_byte(e, 0x3C);
+	e = add_byte(e, 0x40);
+	track_add_event_full(track, 3072, e->event_string, e->event_string_len);
+	free_event_string(e);
+
+	e = new_event_string(e);
+	e = add_meta_message(e, 0x2F);
+	e = add_string("", 0);
+	track_add_event_full(track, 0, e->event_string, e->event_string_len);
+	free_event_string(e);
+
 	free(e);
+
+
+	FILE* f = fopen("helper.mid", "wb");
+	write_midi(m, f);
+	fclose(f);
+	printf("Write helper.mid\n");
+	
 }
 
 int main(){
