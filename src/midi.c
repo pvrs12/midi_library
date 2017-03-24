@@ -166,7 +166,7 @@ struct MidiEvent* parse_midi_event(const uint8_t* event, size_t* size_read){
 			//this is a sysex message (<type> <len> <data>)
 			event_size = parse_midi_sysex_event(event_code);
 		} else {
-			//this is a meta message
+			//this is a meta message (<type> <subtype> <len> <data)
 			event_size = parse_midi_meta_event(event_code);
 		}
 	} 
