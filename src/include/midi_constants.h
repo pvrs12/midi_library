@@ -1,6 +1,9 @@
 #ifndef MIDI_CONSTANTS_H
 #define MIDI_CONSTANTS_H 
 
+/*
+ * MIDI voice event codes
+ */
 #define VOICE_NOTE_OFF 0x80
 #define VOICE_NOTE_ON 0x90
 #define VOICE_POLYPHONIC_PRESSURE 0xA0
@@ -10,6 +13,9 @@
 #define VOICE_CHANNEL_KEY_PRESSURE 0xD0
 #define VOICE_PITCH_BEND 0xE0
 
+/*
+ * MIDI voice channel codes
+ */
 #define CHANNEL_0 0x00
 #define CHANNEL_1 0x01
 #define CHANNEL_2 0x02
@@ -27,6 +33,9 @@
 #define CHANNEL_14 0x0e
 #define CHANNEL_15 0x0f
 
+/*
+ * MIDI note references
+ */
 //negative octave
 #define NOTE_CN1	0x00
 #define NOTE_CSN1	0x01
@@ -168,6 +177,9 @@
 #define NOTE_G9	0x7f
 //Notes beyond this are out of range
 
+/*
+ * MIDI voice velocities. Determines the dynamics of a Voice event
+ */
 #define VELOCITY_ZERO 0x00
 #define VELOCITY_LOW 0x01
 #define VELOCITY_MEDIUM 0x40
@@ -180,6 +192,9 @@
 #define VELOCITY_FORTE      0x60
 #define VELOCITY_FORTISSIMO 0x7F
 
+/*
+ * MIDI meta event codes.
+ */
 #define META_SEQUENCE_NUMBER 0x00
 #define META_TEXT_EVENT 0x01
 #define META_COPYRIGHT_NOTICE 0x02
@@ -197,6 +212,9 @@
 #define META_KEY_SIGNATURE 0x59
 #define META_SEQUENCER_SPECIFIC 0x7F
 
+/*
+ * Midi Instrument program codes
+ */
 #define INSTRUMENT_ACOUSTIC_GRAND_PIANO 1
 #define INSTRUMENT_BRIGHT_ACOUSTIC_PIANO 2
 #define INSTRUMENT_ELECTRIC_GRAND_PIANO 3
@@ -326,6 +344,11 @@
 #define INSTRUMENT_APPLAUSE 127
 #define INSTRUMENT_GUNSHOT 128
 
+/*
+ * Midi note percussion instruments.
+ *
+ * When on track 10, Midi notes play percussion instead of the standard notes.
+ */
 #define PERCUSSION_NOTE_ACOUSTIC_BASS_DRUM 35
 #define PERCUSSION_NOTE_BASS_DRUM_1 36
 #define PERCUSSION_NOTE_SIDE_STICK 37
