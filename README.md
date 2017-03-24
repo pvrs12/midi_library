@@ -9,8 +9,9 @@ Here is a __very__ simple program to create a MIDI.
 
 ```C
 #include <stdio.h>
+#include <string.h>
 
-#include "midi.h"
+#include "src/include/midi.h"
 
 int main(){
 	struct Midi* m = malloc(sizeof(struct Midi));
@@ -22,7 +23,7 @@ int main(){
 	//this track contains meta events like Time Signature and Set Tempo
 	struct MidiTrackChunk* tempo_track = midi_add_track(m);
 	//set the time signature to 4/4, with 24 midi clocks per quarternote
-	uint8_t time_sig_event[] = {0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08}; 
+	uint8_t time_sig_event[] = {0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08};
 	track_add_event_full(tempo_track, 0x00, time_sig_event, 7);
 
 	//Set the tempo to 545454 micro seconds per quarternote
@@ -44,7 +45,7 @@ int main(){
 	//MIDI uses variable length fields, we need this field and to know its size
 	uint8_t* name_varlength = int_to_varlen(name_length, &name_varlength_size);
 	//create space for the event (<event_type> <length> <event_data>)
-	char* track_name_event = malloc(sizeof(char) * (2 + name_varlength_size + name_length))
+	char* track_name_event = malloc(sizeof(char) * (2 + name_varlength_size + name_length));
 	strncat(track_name_event, track_name_command, 2);
 	strncat(track_name_event, name_varlength, name_varlength_size);
 	strncat(track_name_event, track_name, name_length);
@@ -57,11 +58,11 @@ int main(){
 	//add some note on/offs
 	//this is Turn on Middle C, at about Mezzo-Forte
 	uint8_t note[] = {0x90, 0x3C, 0x40};
-	track_add_event_full(track1, 0, ev, 3);
+	track_add_event_full(track1, 0, note, 3);
 	//and then turn it off (i'm going to reuse the array)
 	note[0] = 0x80;
 	//turn it off after 2 whole notes
-	track_add_event_full(track1, 3072, ev, 3);
+	track_add_event_full(track1, 3072, note, 3);
 	//and stop the track (using the array from before)
 	track_add_event_full(track1, 0x00, end_event, 3);
 
@@ -77,5 +78,4 @@ int main(){
 
 	return 0;
 }
-
 ```
