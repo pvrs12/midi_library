@@ -5,7 +5,7 @@ LIBRARY_DIRS = -Llib
 BIN_DIR = bin
 LIB_DIR = lib
 
-OBJ_FILES = midi.o 
+OBJ_FILES = midi.o midi_helper.o
 RUN_OBJ_FILES = test.o
 NAME = midi
 LIBRARIES = -lmidi
@@ -61,6 +61,6 @@ debug: $(BIN)
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJ_DIR)
+	rm -rf $(OBJECT_DIR)
 	rm -rf $(BIN_DIR)
 	rm -rf $(LIB_DIR)

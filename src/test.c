@@ -1,6 +1,7 @@
 #include "include/midi.h"
+#include "include/midi_helper.h"
 
-int main(){
+void test_varlen(){
 	size_t size;
 	uint8_t* num = int_to_varlen(0x0FFFFFFF, &size);
 	size_t read_size;
@@ -10,7 +11,9 @@ int main(){
 	}
 	printf("\t|\t%x\n", len);
 	free(num);
+}
 
+void test_read_write(){
 	struct Midi* m = malloc(sizeof(struct Midi));
 	new_midi(m);
 	//mode 1. 3 tracks. 120 ticks/quarternote
@@ -166,5 +169,21 @@ int main(){
 	}
 	free_midi(mid);
 	free(mid);
+}
+
+void build_helper_midi(){
+	struct EventString* e = malloc(sizeof(struct EventString));
+	new_event_string(e);
+	//add a turn note on message
+	add_voice_message(e, 0x90, 0x00);
+	free_event_string(e);
+	free(e);
+}
+
+int main(){
+	test_varlen();
+	test_read_write();
+	test_helper_midi();
+
 	return 0;
 }
