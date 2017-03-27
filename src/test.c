@@ -1,6 +1,6 @@
-#include "include/midi.h"
-#include "include/midi_helper.h"
-#include "include/midi_constants.h"
+#include "midi.h"
+#include "midi_helper.h"
+#include "midi_constants.h"
 
 #include <string.h>
 

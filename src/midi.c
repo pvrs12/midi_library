@@ -1,5 +1,5 @@
-#include "include/midi.h"
-#include "include/midi_constants.h"
+#include "midi.h"
+#include "midi_constants.h"
 
 #include <malloc.h>
 #include <stdlib.h>
