@@ -74,4 +74,4 @@ clean:
 	rm -rf $(BIN_DIR)
 	rm -rf $(LIB_DIR)
 	rm -rf $(INC_DIR)
-	rm *.mid
+	rm -f *.mid
