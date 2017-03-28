@@ -64,6 +64,10 @@ test: $(BIN)
 debug: $(BIN)
 	gdb $(BIN)
 
+.PHONY: valgrind
+valgrind: $(BIN)
+	valgrind -v --leak-check=full $(BIN)
+
 .PHONY: clean
 clean:
 	rm -rf $(OBJECT_DIR)

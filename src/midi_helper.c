@@ -10,6 +10,7 @@ struct EventString* new_event_string(struct EventString* event){
 
 void free_event_string(struct EventString* event){
 	free(event->event_string);
+	event->event_string = NULL;
 }
 
 struct EventString* add_to_event(struct EventString* event, const uint8_t* s, size_t size){
@@ -46,6 +47,8 @@ struct EventString* add_buffer(struct EventString* event, uint8_t* str, size_t s
 	uint8_t* varlen = int_to_varlen(s, &varlen_size);
 	event = add_to_event(event, varlen, varlen_size);
 	event = add_to_event(event, str, s);
+	free(varlen);
+	varlen = NULL;
 	return event;
 }
 

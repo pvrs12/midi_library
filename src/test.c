@@ -14,6 +14,7 @@ void test_varlen(){
 	}
 	printf("\t|\t%x\n", len);
 	free(num);
+	num = NULL;
 }
 
 void test_read_write(){
@@ -149,13 +150,16 @@ void test_read_write(){
 	FILE* f = fopen("test.mid", "wb");
 	write_midi(m, f);
 	fclose(f);
+	f = NULL;
 	free_midi(m);
 	free(m);
+	m = NULL;
 	printf("Wrote to test.mid\n");
 
 	FILE* fr = fopen("test.mid", "rb");
 	struct Midi* mid = read_midi(fr);
-	fclose(f);
+	fclose(fr);
+	fr = NULL;
 	printf("Read test.mid\n\n\n");
 	printf("It has %d tracks\nit is a %d format midi\nand its divisions are %d\n\n", mid->header->tracks, mid->header->format, mid->header->division);
 	for(size_t i = 1; i < mid->header->tracks + 1;++i){
@@ -172,6 +176,7 @@ void test_read_write(){
 	}
 	free_midi(mid);
 	free(mid);
+	mid = NULL;
 }
 
 void test_helper_midi(){
@@ -216,12 +221,17 @@ void test_helper_midi(){
 	free_event_string(e);
 
 	free(e);
+	e = NULL;
 
 
 	FILE* f = fopen("helper.mid", "wb");
 	write_midi(m, f);
 	fclose(f);
+	f = NULL;
 	printf("Write helper.mid\n");
+	free_midi(m);
+	free(m);
+	m = NULL;
 	
 }
 
@@ -235,6 +245,7 @@ void test_errors(){
 
 	free_midi(m);
 	free(m);
+	m = NULL;
 }
 
 int main(){
