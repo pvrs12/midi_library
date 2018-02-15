@@ -9,7 +9,41 @@
 #include <assert.h>
 
 //for htonl 
+#if __has_include(<netinet/in.h>)
 #include <netinet/in.h>
+#elif __has_include(<arpa/inet.h>)
+#include <arpa/inet.h>
+#else
+
+#define LITTLE_ENDIAN 0x41424344UL 
+#define BIG_ENDIAN    0x44434241UL
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmultichar"
+#define ENDIAN_ORDER  ('ABCD')
+
+#if ENDIAN_ORDER==LITTLE_ENDIAN
+#define htons(A) 	((((uint16_t)(A) & 0xff00) >> 8) | \
+					(((uint16_t)(A) & 0x00ff) << 8))
+
+#define htonl(A) 	((((uint32_t)(A) & 0xff000000) >> 24) | \
+					(((uint32_t)(A) & 0x00ff0000) >> 8)  | \
+					(((uint32_t)(A) & 0x0000ff00) << 8)  | \
+					(((uint32_t)(A) & 0x000000ff) << 24))
+
+#define ntohs  htons
+#define ntohl  htonl
+#elif ENDIAN_ORDER==BIG_ENDIAN
+	#define htons(A) (A)
+	#define htonl(A) (A)
+	#define ntohs(A) (A)
+	#define ntohl(A) (A)
+
+#else
+	#error "Cannot determine endianness. Good luck."
+#endif //ENDIAN_ORDER
+#pragma GCC diagnostic pop
+
+#endif //NO inet.h
 
 uint32_t varlen_to_int (const uint8_t* var, size_t* size) {
 	uint32_t val = 0;
